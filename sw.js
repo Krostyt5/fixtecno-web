@@ -1,5 +1,5 @@
 /* FixTecno Sur — Service Worker (offline-first, cache-first) */
-const CACHE = "fixtecno-sur-v14";
+const CACHE = "fixtecno-sur-v15";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-192.png", "./icon-512.png", "./logo-fixtecno.png"];
 
 self.addEventListener("install", (event) => {

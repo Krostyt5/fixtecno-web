@@ -494,6 +494,10 @@ body:not([data-view="ficha"]) .top-actions{display:none}
         <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
         <strong>Diagnóstico Inicial</strong><small>Inspección y cotización</small>
       </button>
+      <button class="tab-btn" type="button" data-service="presupuesto" role="tab">
+        <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+        <strong>Presupuesto</strong><small>Valores y recomendaciones</small>
+      </button>
       <button class="tab-btn" type="button" data-service="reparacion" role="tab">
         <span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/></svg></span>
         <strong>Reparación</strong><small>Repuestos + mano de obra</small>
@@ -526,6 +530,16 @@ body:not([data-view="ficha"]) .top-actions{display:none}
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Panel: Presupuesto para el cliente -->
+    <div class="tab-panel" id="panel-presupuesto">
+      <p class="hint" style="margin:0 0 12px">Agrega repuestos y mano de obra en el tarifario o como ítems personalizados. Puedes editar la cantidad y el precio de cada ítem en la tabla del presupuesto.</p>
+      <div class="grid grid-2">
+        <div class="field"><label for="presupuesto-recomendaciones">Recomendaciones y cambio de piezas por desgaste</label><textarea id="presupuesto-recomendaciones" placeholder="Ej: Se recomienda cambiar el sello de grupo por desgaste y revisar la válvula en el próximo mantenimiento."></textarea></div>
+        <div class="field"><label for="presupuesto-advertencias">Advertencias y riesgos asociados al desgaste</label><textarea id="presupuesto-advertencias" placeholder="Ej: Si no se reemplaza el sello desgastado, podrían producirse filtraciones. La evaluación final depende del desarme."></textarea></div>
+      </div>
+      <p class="hint" style="margin:10px 0 0">Estos textos son opcionales y aparecerán en el informe de presupuesto. Describe solo las observaciones que correspondan al equipo.</p>
     </div>
 
     <!-- Panel: Reparación -->
@@ -889,7 +903,7 @@ const CATALOG = [
   {id:"c32", name:"Mano de obra general por hora técnica", type:"mano", price:15000, service:["diagnostico","reparacion","mantenimiento","flasheo"], cat:["general","cafe","blanca","informatica","perifericos"]}
 ];
 
-const SERVICE_LABEL = {diagnostico:"Diagnóstico Inicial", reparacion:"Reparación", mantenimiento:"Mantenimiento Preventivo / Correctivo", flasheo:"Flasheo / Servicio Lógico (BIOS/Firmware)"};
+const SERVICE_LABEL = {diagnostico:"Diagnóstico Inicial", presupuesto:"Presupuesto", reparacion:"Reparación", mantenimiento:"Mantenimiento Preventivo / Correctivo", flasheo:"Flasheo / Servicio Lógico (BIOS/Firmware)"};
 const CAT_LABEL = {cafe:"Café & Espresso", blanca:"Línea Blanca & Electrodomésticos", informatica:"Informática & Computación", perifericos:"Periféricos & Otros"};
 
 
@@ -1193,7 +1207,7 @@ function renderCatalog(){
   const list = CATALOG.filter(it=>{
     if(state.filter==="repuesto" && it.type!=="repuesto") return false;
     if(state.filter==="mano" && it.type!=="mano") return false;
-    if(state.filter==="servicio" && !it.service.includes(state.service)) return false;
+    if(state.filter==="servicio" && state.service!=="presupuesto" && !it.service.includes(state.service)) return false;
     if(q && !it.name.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1218,6 +1232,11 @@ function addCatalogItem(id){
 }
 
 function suggestItems(){
+  if(state.service==="presupuesto"){
+    $("#catalog-list").scrollIntoView({behavior:"smooth",block:"center"});
+    toast("Elige los repuestos y trabajos que correspondan al presupuesto");
+    return;
+  }
   if(state.service==="diagnostico"){
     $("#diagnosticos-panel").scrollIntoView({behavior:"smooth",block:"center"});
     toast("Elige el diagnóstico adecuado para el equipo");
@@ -1539,6 +1558,7 @@ function buildPrint(){
         <div class="ps-grand"><small>Total estimado</small><span>${fmtCLP(t.total)}</span></div>
       </div></div>
     </section>` : ""}
+    ${reportType==="presupuesto" && (g("presupuesto-recomendaciones")||g("presupuesto-advertencias")) ? `<section class="ps-section"><div class="ps-section-title"><span class="ps-section-number">${imgs ? "08" : "07"}</span> Recomendaciones y advertencias</div><div class="ps-notes">${g("presupuesto-recomendaciones") ? `<div class="ps-note">${field("Recomendaciones y cambio de piezas por desgaste",g("presupuesto-recomendaciones"))}</div>` : ""}${g("presupuesto-advertencias") ? `<div class="ps-note">${field("Advertencias y riesgos asociados al desgaste",g("presupuesto-advertencias"))}</div>` : ""}</div></section>` : ""}
     <div class="ps-sign"><div>Firma cliente / aceptación</div><div>Firma técnico responsable</div></div>
     <div class="ps-foot"><strong>FixTecno Sur</strong> · Servicio técnico y diagnóstico<br>${reportType==="recepcion" ? "La recepción no constituye un diagnóstico ni una aceptación de reparación. Conserve esta ficha para el retiro del equipo." : "Los valores son referenciales y pueden variar según el estado del equipo, los repuestos y los hallazgos del diagnóstico. Conserve esta ficha para el retiro del equipo."}</div>`;
 }
@@ -1710,7 +1730,9 @@ function init(){
 
   // Pestañas de servicio
   $$(".tab-btn").forEach(b=> b.addEventListener("click", ()=>{
-    state.service = b.dataset.service; syncTabs(); renderCatalog(); renderSummary(); saveDraft(true);
+    state.service = b.dataset.service;
+    if(state.service==="presupuesto"){ $("#report-type").value="presupuesto"; $("#report-type").dispatchEvent(new Event("change",{bubbles:true})); }
+    syncTabs(); renderCatalog(); renderSummary(); saveDraft(true);
   }));
   // Categorías
   $$(".cat-card").forEach(b=> b.addEventListener("click", ()=>{
