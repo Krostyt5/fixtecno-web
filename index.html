@@ -512,6 +512,11 @@ body:not([data-view="ficha"]) .top-actions{display:none}
       </button>
     </div>
 
+    <div style="margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#f8fafc">
+      <label class="checkline" for="honorarios-leyenda"><input type="checkbox" id="honorarios-leyenda"> Incluir leyenda de Boleta de Honorarios (retención 15,25%) en el informe</label>
+      <p class="hint" style="margin:4px 0 0">Opcional para cualquier servicio y categoría. Solo agrega el texto al informe; no calcula ni descuenta la retención, ni modifica IVA o valores. Verifica la tasa y las condiciones que correspondan al emitir.</p>
+    </div>
+
     <!-- Panel: Diagnóstico -->
     <div class="tab-panel active" id="panel-diagnostico">
       <div class="grid grid-2">
@@ -1558,6 +1563,7 @@ function buildPrint(){
         <div class="ps-grand"><small>Total estimado</small><span>${fmtCLP(t.total)}</span></div>
       </div></div>
     </section>` : ""}
+    ${$("#honorarios-leyenda").checked ? `<section class="ps-section"><div class="ps-section-title">Boleta de honorarios</div><div class="ps-detail">Presupuesto expresado en valores brutos para emisión de Boleta de Honorarios Electrónica (sujeto a retención legal del 15,25% por parte del receptor).</div></section>` : ""}
     ${reportType==="presupuesto" && (g("presupuesto-recomendaciones")||g("presupuesto-advertencias")) ? `<section class="ps-section"><div class="ps-section-title"><span class="ps-section-number">${imgs ? "08" : "07"}</span> Recomendaciones y advertencias</div><div class="ps-notes">${g("presupuesto-recomendaciones") ? `<div class="ps-note">${field("Recomendaciones y cambio de piezas por desgaste",g("presupuesto-recomendaciones"))}</div>` : ""}${g("presupuesto-advertencias") ? `<div class="ps-note">${field("Advertencias y riesgos asociados al desgaste",g("presupuesto-advertencias"))}</div>` : ""}</div></section>` : ""}
     <div class="ps-sign"><div>Firma cliente / aceptación</div><div>Firma técnico responsable</div></div>
     <div class="ps-foot"><strong>FixTecno Sur</strong> · Servicio técnico y diagnóstico<br>${reportType==="recepcion" ? "La recepción no constituye un diagnóstico ni una aceptación de reparación. Conserve esta ficha para el retiro del equipo." : "Los valores son referenciales y pueden variar según el estado del equipo, los repuestos y los hallazgos del diagnóstico. Conserve esta ficha para el retiro del equipo."}</div>`;
